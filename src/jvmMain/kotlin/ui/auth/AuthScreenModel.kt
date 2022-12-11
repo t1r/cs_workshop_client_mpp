@@ -4,12 +4,17 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import common.launchOnIo
 import data.api.ApiDataSource
 import data.auth.AuthDataSource
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import ui.auth.AuthScreenModel.State
 
 class AuthScreenModel(
     private val apiDataSource: ApiDataSource = ApiDataSource(),
 ) : StateScreenModel<State>(State()) {
+    private val mutableLabels: MutableSharedFlow<Label> = MutableSharedFlow()
+    val labels: SharedFlow<Label> = mutableLabels.asSharedFlow()
 
     fun onNameChanged(value: String?) {
         mutableState.update { state ->
@@ -24,8 +29,8 @@ class AuthScreenModel(
     }
 
     fun setDefault() {
-        mutableState.update { state ->
-            state.copy(
+        mutableState.update { s ->
+            s.copy(
                 name = AuthDataSource.defaultAuthData.username,
                 password = AuthDataSource.defaultAuthData.password,
             )
@@ -36,15 +41,29 @@ class AuthScreenModel(
         launchOnIo {
             val name = state.value.name ?: return@launchOnIo
             val password = state.value.password ?: return@launchOnIo
-            apiDataSource.auth(
-                name = name,
-                password = password,
-            )
+            if (state.value.isAuthInProgress) return@launchOnIo
+            mutableState.update { s -> s.copy(isAuthInProgress = true) }
+            try {
+                apiDataSource.auth(
+                    name = name,
+                    password = password,
+                )
+                mutableState.update { s -> s.copy(isAuthInProgress = false) }
+                mutableLabels.emit(Label.GoToFoods)
+            } catch (throwable: Throwable) {
+                throwable.printStackTrace()
+                mutableState.update { s -> s.copy(isAuthInProgress = false) }
+            }
         }
     }
 
     data class State(
         val name: String? = AuthDataSource.currentAuthData?.username,
         val password: String? = AuthDataSource.currentAuthData?.password,
+        val isAuthInProgress: Boolean = false,
     )
+
+    sealed class Label {
+        object GoToFoods : Label()
+    }
 }
