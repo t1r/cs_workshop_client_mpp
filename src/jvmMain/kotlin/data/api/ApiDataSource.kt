@@ -37,10 +37,6 @@ class ApiDataSource {
         }
     }
 
-    suspend fun foodList(): List<FoodModel> {
-        return client.get("${BASE_URL}/api/foodList").body()
-    }
-
     suspend fun auth(
         name: String,
         password: String,
@@ -50,6 +46,27 @@ class ApiDataSource {
             formParameters = Parameters.build {
                 append("name", name)
                 append("password", password)
+            }
+        )
+    }
+
+    suspend fun foodList(): List<FoodModel> {
+        return client.get("${BASE_URL}/api/foodList").body()
+    }
+
+    suspend fun food(id: Long): FoodModel {
+        return client.get("${BASE_URL}/api/food/{$id}").body()
+    }
+
+    suspend fun addFood(
+        name: String,
+        weight: Float,
+    ) {
+        client.submitForm(
+            "${BASE_URL}/api/addFood",
+            formParameters = Parameters.build {
+                append("name", name)
+                append("weight", weight.toString())
             }
         )
     }
