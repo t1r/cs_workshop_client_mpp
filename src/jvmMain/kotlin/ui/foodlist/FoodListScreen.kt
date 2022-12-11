@@ -1,15 +1,10 @@
 package ui.foodlist
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import data.api.FoodModel
 
 object FoodListScreen : Screen {
 
@@ -25,6 +22,7 @@ object FoodListScreen : Screen {
     override fun Content() {
         val screenModel = rememberScreenModel { FoodListScreenModel() }
         val state by screenModel.state.collectAsState()
+        val navigator = LocalNavigator.current
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -39,16 +37,40 @@ object FoodListScreen : Screen {
                     targetState = state.contentState,
                 ) { contentState ->
                     when (contentState) {
-                        FoodListScreenModel.ContentState.Idle,
-                        FoodListScreenModel.ContentState.Loading -> Progress()
+                        is FoodListScreenModel.ContentState.Idle,
+                        is FoodListScreenModel.ContentState.Loading -> Progress()
 
                         is FoodListScreenModel.ContentState.Result -> DataContent(
-
+                            list = contentState.foodList,
+                            onItemClicked = {
+//                               navigator. push()
+                            },
                         )
+
+                        is FoodListScreenModel.ContentState.Error -> Error { screenModel.fetchData() }
                     }
                 }
             },
         )
+    }
+
+    @Composable
+    private fun DataContent(
+        list: List<FoodModel>,
+        onItemClicked: (Long) -> Unit,
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(list.size) { index ->
+                val item = list[index]
+                Row(modifier = Modifier.fillMaxWidth().clickable { onItemClicked(item.id) }) {
+                    Text(item.name)
+                    Spacer(modifier = Modifier.weight(1F))
+                    Text("${item.weight} грамм")
+                }
+            }
+        }
     }
 
     @Composable
@@ -63,11 +85,23 @@ object FoodListScreen : Screen {
     }
 
     @Composable
-    private fun DataContent() {
-        LazyColumn(
+    private fun Error(
+        onAction: () -> Unit,
+    ) {
+        Column(
             modifier = Modifier.fillMaxSize()
         ) {
-
+            Spacer(modifier = Modifier.weight(1F))
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = "Что-то пошло не так",
+            )
+            Button(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).align(Alignment.CenterHorizontally),
+                content = { Text("Повторить") },
+                onClick = onAction,
+            )
+            Spacer(modifier = Modifier.weight(1F))
         }
     }
 }
