@@ -17,7 +17,7 @@ class ApiDataSource {
     private val client = HttpClient(CIO) {
         install(Auth) {
             basic {
-                credentials { AuthDataSource.currentAuthData }
+                credentials { AuthDataSource.currentAuthData() }
                 realm = "Access to the '/' path"
             }
         }

@@ -12,6 +12,7 @@ import ui.auth.AuthScreenModel.State
 
 class AuthScreenModel(
     private val apiDataSource: ApiDataSource = ApiDataSource(),
+    private val authDataSource: AuthDataSource = AuthDataSource,
 ) : StateScreenModel<State>(State()) {
     private val mutableLabels: MutableSharedFlow<Label> = MutableSharedFlow()
     val labels: SharedFlow<Label> = mutableLabels.asSharedFlow()
@@ -48,6 +49,10 @@ class AuthScreenModel(
                     name = name,
                     password = password,
                 )
+                authDataSource.update(
+                    username = name,
+                    password = password,
+                )
                 mutableState.update { s -> s.copy(isAuthInProgress = false) }
                 mutableLabels.emit(Label.GoToFoods)
             } catch (throwable: Throwable) {
@@ -58,8 +63,8 @@ class AuthScreenModel(
     }
 
     data class State(
-        val name: String? = AuthDataSource.currentAuthData?.username,
-        val password: String? = AuthDataSource.currentAuthData?.password,
+        val name: String? = AuthDataSource.currentAuthData()?.username,
+        val password: String? = AuthDataSource.currentAuthData()?.password,
         val isAuthInProgress: Boolean = false,
     )
 
