@@ -47,10 +47,4 @@ class AuthScreenModel(
         val name: String? = AuthDataSource.currentAuthData?.username,
         val password: String? = AuthDataSource.currentAuthData?.password,
     )
-
-//    sealed class AuthProgressState{
-//        object Init : AuthProgressState()
-//        object Loading : AuthProgressState()
-//        data class Result(val post: Post) : State()
-//    }
 }

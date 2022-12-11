@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 
 object AuthScreen : Screen {
 
@@ -19,6 +20,7 @@ object AuthScreen : Screen {
     override fun Content() {
         val screenModel = rememberScreenModel { AuthScreenModel() }
         val state by screenModel.state.collectAsState()
+        val navigator = LocalNavigator.current
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
