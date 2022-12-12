@@ -52,7 +52,7 @@ object AuthScreen : Screen {
                     )
                     OutlinedTextField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        value = state.name.orEmpty(),
+                        value = state.password.orEmpty(),
                         onValueChange = { screenModel.onPasswordChanged(it) },
                         label = { Text("Пароль") },
                     )

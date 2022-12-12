@@ -1,12 +1,11 @@
-package ui.foodlist
+package ui.food
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,13 +17,14 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import data.api.FoodModel
-import ui.food.FoodScreen
 
-object FoodListScreen : Screen {
+data class FoodScreen(
+    private val id: Long,
+) : Screen {
 
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { FoodListScreenModel() }
+        val screenModel = rememberScreenModel { FoodScreenModel(id) }
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.current
 
@@ -32,21 +32,12 @@ object FoodListScreen : Screen {
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
-                    title = { Text("Список продуктов") },
+                    title = { Text("Продукт") },
                     navigationIcon = {
                         IconButton(
                             onClick = { navigator?.pop() },
                         ) {
                             Icon(Icons.Filled.ArrowBack, "")
-                        }
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = {
-
-                            },
-                        ) {
-                            Icon(Icons.Filled.Add, "")
                         }
                     },
                 )
@@ -57,17 +48,14 @@ object FoodListScreen : Screen {
                     targetState = state.contentState,
                 ) { contentState ->
                     when (contentState) {
-                        is FoodListScreenModel.ContentState.Idle,
-                        is FoodListScreenModel.ContentState.Loading -> Progress()
+                        is FoodScreenModel.ContentState.Idle,
+                        is FoodScreenModel.ContentState.Loading -> Progress()
 
-                        is FoodListScreenModel.ContentState.Result -> DataContent(
-                            list = contentState.foodList,
-                            onItemClicked = {
-                                navigator?.push(FoodScreen(it))
-                            },
+                        is FoodScreenModel.ContentState.Result -> DataContent(
+                            model = contentState.model,
                         )
 
-                        is FoodListScreenModel.ContentState.Error -> Error { screenModel.fetchData() }
+                        is FoodScreenModel.ContentState.Error -> Error { screenModel.fetchData() }
                     }
                 }
             },
@@ -76,24 +64,41 @@ object FoodListScreen : Screen {
 
     @Composable
     private fun DataContent(
-        list: List<FoodModel>,
-        onItemClicked: (Long) -> Unit,
+        model: FoodModel,
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         ) {
-            items(list.size) { index ->
-                val item = list[index]
-                Row(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
+                Text("Имя")
+                Spacer(
                     modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                        .clickable { onItemClicked(item.id) },
-                ) {
-                    Text(item.name)
-                    Spacer(modifier = Modifier.weight(1F))
-                    Text("${item.weight} грамм")
-                }
+                        .weight(1F)
+                        .padding(16.dp),
+                )
+                Text(model.name)
+            }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text("Вес")
+                Spacer(
+                    modifier = Modifier
+                        .weight(1F)
+                        .padding(16.dp),
+                )
+                Text("${model.weight} грамм")
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
+                Text("Id")
+                Spacer(modifier = Modifier.weight(1F))
+                Text("${model.id}")
             }
         }
     }

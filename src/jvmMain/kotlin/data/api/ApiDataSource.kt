@@ -55,7 +55,7 @@ class ApiDataSource {
     }
 
     suspend fun food(id: Long): FoodModel {
-        return client.get("${BASE_URL}/api/food/{$id}").body()
+        return client.get("${BASE_URL}/api/food/$id").body()
     }
 
     suspend fun addFood(
