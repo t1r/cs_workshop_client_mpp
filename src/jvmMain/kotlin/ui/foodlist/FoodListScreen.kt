@@ -18,6 +18,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import data.api.FoodModel
+import ui.addfood.AddFoodScreen
 import ui.food.FoodScreen
 
 object FoodListScreen : Screen {
@@ -43,7 +44,7 @@ object FoodListScreen : Screen {
                     actions = {
                         IconButton(
                             onClick = {
-
+                                navigator?.push(AddFoodScreen { screenModel.fetchData() })
                             },
                         ) {
                             Icon(Icons.Filled.Add, "")
@@ -86,9 +87,9 @@ object FoodListScreen : Screen {
                 val item = list[index]
                 Row(
                     modifier = Modifier
-                        .padding(16.dp)
+                        .clickable { onItemClicked(item.id) }
                         .fillMaxWidth()
-                        .clickable { onItemClicked(item.id) },
+                        .padding(16.dp),
                 ) {
                     Text(item.name)
                     Spacer(modifier = Modifier.weight(1F))

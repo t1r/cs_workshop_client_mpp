@@ -74,7 +74,7 @@ data class FoodScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
             ) {
-                Text("Имя")
+                Text("Название")
                 Spacer(
                     modifier = Modifier
                         .weight(1F)
@@ -82,7 +82,11 @@ data class FoodScreen(
                 )
                 Text(model.name)
             }
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
                 Text("Вес")
                 Spacer(
                     modifier = Modifier
