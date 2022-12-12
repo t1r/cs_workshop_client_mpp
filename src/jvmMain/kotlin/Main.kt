@@ -10,7 +10,7 @@ fun main() = application {
     Window(onCloseRequest = ::exitApplication) {
         MaterialTheme {
             Navigator(
-                if (AuthDataSource.currentAuthData == null) AuthScreen
+                if (AuthDataSource.currentAuthData() == null) AuthScreen
                 else FoodListScreen
             )
         }

@@ -1,9 +1,14 @@
-package ui.auth
+package ui.addfood
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -15,14 +20,15 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import  ui.auth.AuthScreenModel.Label
-import ui.foodlist.FoodListScreen
+import ui.addfood.AddFoodScreenModel.Label
 
-object AuthScreen : Screen {
+data class AddFoodScreen(
+    private val onResult: () -> Unit,
+) : Screen {
 
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { AuthScreenModel() }
+        val screenModel = rememberScreenModel { AddFoodScreenModel() }
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.current
 
@@ -30,7 +36,14 @@ object AuthScreen : Screen {
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
-                    title = { Text("Авторизация") },
+                    title = { Text("Добавление продукта") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { navigator?.pop() },
+                        ) {
+                            Icon(Icons.Filled.ArrowBack, "")
+                        }
+                    },
                 )
             },
             content = { pv ->
@@ -41,36 +54,30 @@ object AuthScreen : Screen {
                     LinearProgressIndicator(
                         modifier = Modifier
                             .padding(vertical = 4.dp)
-                            .alpha(if (state.isAuthInProgress) 1F else 0F),
+                            .alpha(if (state.isAddFoodInProgress) 1F else 0F),
                     )
                     Spacer(modifier = Modifier.weight(1F))
                     OutlinedTextField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         value = state.name.orEmpty(),
                         onValueChange = { screenModel.onNameChanged(it) },
-                        label = { Text("Имя") },
+                        label = { Text("Название") },
                         isError = state.isError,
                     )
                     OutlinedTextField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        value = state.password.orEmpty(),
-                        onValueChange = { screenModel.onPasswordChanged(it) },
-                        label = { Text("Пароль") },
+                        value = state.weight.orEmpty(),
+                        onValueChange = { screenModel.onWeightChanged(it) },
+                        label = { Text("Вес") },
                         isError = state.isError,
                     )
                     Button(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        content = { Text("Авторизация") },
-                        onClick = { screenModel.auth() },
+                        content = { Text("Добавить") },
+                        onClick = { screenModel.addFood() },
                     )
                     if (state.isError) Text("Что-то пошло не так")
                     Spacer(modifier = Modifier.weight(1F))
-                    Button(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        content = { Text("По умолчанию") },
-                        onClick = { screenModel.setDefault() },
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
             },
         )
@@ -78,7 +85,10 @@ object AuthScreen : Screen {
         LaunchedEffect(Unit) {
             screenModel.labels.collect { label ->
                 when (label) {
-                    Label.GoToFoods -> navigator?.push(FoodListScreen)
+                    Label.Back -> {
+                        onResult()
+                        navigator?.pop()
+                    }
                 }
             }
         }
