@@ -40,10 +40,16 @@ class AuthScreenModel(
 
     fun auth() {
         launchOnIo {
-            val name = state.value.name ?: return@launchOnIo
-            val password = state.value.password ?: return@launchOnIo
+            val name = state.value.name
+            val password = state.value.password
+            if (name.isNullOrBlank() || password.isNullOrBlank()) return@launchOnIo
             if (state.value.isAuthInProgress) return@launchOnIo
-            mutableState.update { s -> s.copy(isAuthInProgress = true) }
+            mutableState.update { s ->
+                s.copy(
+                    isAuthInProgress = true,
+                    isError = false,
+                )
+            }
             try {
                 apiDataSource.auth(
                     name = name,
@@ -57,7 +63,12 @@ class AuthScreenModel(
                 mutableLabels.emit(Label.GoToFoods)
             } catch (throwable: Throwable) {
                 throwable.printStackTrace()
-                mutableState.update { s -> s.copy(isAuthInProgress = false) }
+                mutableState.update { s ->
+                    s.copy(
+                        isAuthInProgress = false,
+                        isError = true,
+                    )
+                }
             }
         }
     }
@@ -66,6 +77,7 @@ class AuthScreenModel(
         val name: String? = AuthDataSource.currentAuthData()?.username,
         val password: String? = AuthDataSource.currentAuthData()?.password,
         val isAuthInProgress: Boolean = false,
+        val isError: Boolean = false,
     )
 
     sealed class Label {

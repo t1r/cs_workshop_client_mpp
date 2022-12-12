@@ -49,18 +49,21 @@ object AuthScreen : Screen {
                         value = state.name.orEmpty(),
                         onValueChange = { screenModel.onNameChanged(it) },
                         label = { Text("Имя") },
+                        isError = state.isError,
                     )
                     OutlinedTextField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         value = state.password.orEmpty(),
                         onValueChange = { screenModel.onPasswordChanged(it) },
                         label = { Text("Пароль") },
+                        isError = state.isError,
                     )
                     Button(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         content = { Text("Авторизация") },
                         onClick = { screenModel.auth() },
                     )
+                    if (state.isError) Text("Что-то пошло не так")
                     Spacer(modifier = Modifier.weight(1F))
                     Button(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
